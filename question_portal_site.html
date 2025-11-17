@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hall A</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #4a6cf7;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    #questions {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      min-height: 200px;
+    }
+    .question {
+      background: #e9edff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .input-box {
+      display: flex;
+      gap: 10px;
+    }
+    .input-box input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .input-box button {
+      padding: 12px 18px;
+      background: #4a6cf7;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>Hall A</header>
+
+  <div id="namePrompt" style="padding:20px; text-align:center; font-size:18px;">
+    <strong>Welcome!</strong><br>
+    Please enter your name to join:<br><br>
+    <input id="usernameInput" type="text" placeholder="Your name..." style="padding:10px; border-radius:8px; border:1px solid #bbb; width:60%; max-width:250px;">
+    <button onclick="setUsername()" style="padding:10px 16px; border:none; border-radius:8px; background:#4a6cf7; color:white; cursor:pointer;">Join</button>
+  </div>
+  <div class="container" style="display:none;" id="chatContainer">
+    <div id="questions"></div>
+
+    <div class="input-box">
+      <input id="questionInput" type="text" placeholder="Ask a question..." />
+      <button onclick="addQuestion()">Send</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Firebase configuration (replace with your own)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let username = "";
+
+    function setUsername() {
+      const nameInput = document.getElementById("usernameInput");
+      if (nameInput.value.trim() === "") return;
+      username = nameInput.value;
+      document.getElementById("namePrompt").style.display = "none";
+      document.getElementById("chatContainer").style.display = "block";
+
+      // Load existing questions
+      db.ref('questions').on('child_added', snapshot => {
+        const q = snapshot.val();
+        addQuestionToDOM(q.name, q.text);
+      });
+    }
+
+    function addQuestion() {
+      const input = document.getElementById("questionInput");
+      if (input.value.trim() === "") return;
+      const questionData = { name: username, text: input.value };
+      db.ref('questions').push(questionData);
+      input.value = "";
+    }
+
+    function addQuestionToDOM(name, text) {
+      const box = document.getElementById("questions");
+      const q = document.createElement("div");
+      q.className = "question";
+      q.innerText = name + ": " + text;
+      box.appendChild(q);
+      box.scrollTop = box.scrollHeight;
+    }
+  </script>
+</body>
+</html>
